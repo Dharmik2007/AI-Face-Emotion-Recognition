@@ -1,0 +1,2 @@
+# This file ensures the dataset/videos directory is tracked by Git.
+# Actual large video dataset files (e.g., .mp4, .avi) are excluded via .gitignore.

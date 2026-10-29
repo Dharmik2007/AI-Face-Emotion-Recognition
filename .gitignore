@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Cpython & Pytest caches
+.pytest_cache/
+.coverage
+htmlcov/
+.cache/
+
+# Node & package manager dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environments & sensitive keys
+.env
+.env.*
+!.env.example
+.venv/
+env/
+venv/
+ENV/
+*.key
+*.pem
+
+# Large dataset raw archives & heavy CSVs (>100MB)
+dataset/fer2013.csv
+dataset/*.tar.gz
+dataset/*.zip
+dataset/*.rar
+dataset/*.7z
+
+# Video sequence datasets & personal recordings
+dataset/videos/*.mp4
+dataset/videos/*.avi
+dataset/videos/*.mov
+dataset/videos/*.mkv
+recordings/
+uploads/
+
+# Logs & temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+

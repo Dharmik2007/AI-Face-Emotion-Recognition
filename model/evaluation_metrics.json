@@ -1,0 +1,126 @@
+{
+  "test_accuracy": 56.09,
+  "test_loss": 1.1416,
+  "total_test_samples": 3589,
+  "dataset_name": "fer2013.csv",
+  "is_real_dataset": true,
+  "per_class": {
+    "Angry": {
+      "precision": 45.28,
+      "recall": 46.84,
+      "f1_score": 46.05,
+      "support": 491
+    },
+    "Disgust": {
+      "precision": 40.0,
+      "recall": 10.91,
+      "f1_score": 17.14,
+      "support": 55
+    },
+    "Fear": {
+      "precision": 40.4,
+      "recall": 15.15,
+      "f1_score": 22.04,
+      "support": 528
+    },
+    "Happy": {
+      "precision": 75.2,
+      "recall": 85.21,
+      "f1_score": 79.89,
+      "support": 879
+    },
+    "Sad": {
+      "precision": 40.22,
+      "recall": 54.71,
+      "f1_score": 46.36,
+      "support": 594
+    },
+    "Surprise": {
+      "precision": 67.41,
+      "recall": 65.62,
+      "f1_score": 66.5,
+      "support": 416
+    },
+    "Neutral": {
+      "precision": 53.11,
+      "recall": 55.91,
+      "f1_score": 54.47,
+      "support": 626
+    }
+  },
+  "macro_avg": {
+    "precision": 51.66,
+    "recall": 47.77,
+    "f1_score": 47.49
+  },
+  "weighted_avg": {
+    "precision": 54.9,
+    "recall": 56.09,
+    "f1_score": 54.25
+  },
+  "confusion_matrix": [
+    [
+      230,
+      4,
+      28,
+      36,
+      111,
+      11,
+      71
+    ],
+    [
+      27,
+      6,
+      0,
+      5,
+      14,
+      3,
+      0
+    ],
+    [
+      89,
+      3,
+      80,
+      55,
+      153,
+      73,
+      75
+    ],
+    [
+      28,
+      0,
+      15,
+      749,
+      46,
+      16,
+      25
+    ],
+    [
+      62,
+      1,
+      23,
+      58,
+      325,
+      11,
+      114
+    ],
+    [
+      27,
+      0,
+      39,
+      35,
+      18,
+      273,
+      24
+    ],
+    [
+      45,
+      1,
+      13,
+      58,
+      141,
+      18,
+      350
+    ]
+  ]
+}

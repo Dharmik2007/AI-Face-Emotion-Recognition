@@ -1,0 +1,24 @@
+{
+  "name": "facial-expression-recognition",
+  "version": "1.0.0",
+  "description": "Human Facial Expression Recognition Using CNN - Flask Web App",
+  "scripts": {
+    "dev": "python app.py",
+    "start": "python app.py",
+    "train": "python training/train.py",
+    "test": "pytest tests/ -v"
+  },
+  "keywords": [
+    "facial-expression-recognition",
+    "cnn",
+    "flask",
+    "deep-learning",
+    "opencv"
+  ],
+  "author": "Dharmik Vataliya",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dharmik2007/AI-Face-Emotion-Recognition.git"
+  },
+  "license": "MIT"
+}

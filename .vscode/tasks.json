@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: dev",
+      "type": "npm",
+      "script": "dev",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "Starts the Flask CNN Facial Expression Recognition server"
+    },
+    {
+      "label": "npm: start",
+      "type": "npm",
+      "script": "start",
+      "problemMatcher": [],
+      "detail": "Runs python app.py"
+    },
+    {
+      "label": "Train CNN Model",
+      "type": "shell",
+      "command": "python training/train.py",
+      "problemMatcher": [],
+      "detail": "Train the FER-2013 deep convolutional neural network"
+    }
+  ]
+}

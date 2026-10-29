@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Result: {{ predicted_label }} ({{ confidence }}%) | FaceSense AI{% endblock %}
+
+{% block content %}
+<div class="container result-page">
+
+    <!-- Top Navigation Breadcrumb -->
+    <div class="result-top-bar">
+        <a href="{{ url_for('index') }}" class="btn btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to Dashboard
+        </a>
+        <div class="result-file-meta">
+            <span class="file-tag-pill">File: <strong>{{ filename }}</strong></span>
+            {% if quality %}
+            <span class="metric-pill {% if quality.status == 'optimal' %}pill-success{% else %}pill-warning{% endif %}">
+                <span class="pill-dot {% if quality.status == 'optimal' %}green{% else %}amber{% endif %}"></span>
+                {{ quality.message }}
+            </span>
+            {% endif %}
+            {% if faces_count and faces_count > 1 %}
+            <span class="badge badge-warning">{{ faces_count }} Faces Detected</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Results Grid -->
+    <div class="result-layout">
+
+        <!-- Column 1: Visual Images (Annotated + Cropped Face) -->
+        <div class="result-visual-col">
+            <div class="card result-card">
+                <div class="card-header flex-between">
+                    <h3>OpenCV Face Detection &amp; HUD Box</h3>
+                    {% if face_detected %}
+                        <span class="badge badge-success">Frontal Face Detected</span>
+                    {% else %}
+                        <span class="badge badge-warning">Fallback: Full Frame</span>
+                    {% endif %}
+                </div>
+
+                <div class="annotated-image-wrapper">
+                    <img src="{{ annotated_image }}" alt="Annotated Facial Image" class="annotated-img">
+                </div>
+
+                <!-- Cropped 48x48 Face Preview -->
+                <div class="face-crop-card">
+                    <div class="crop-header">
+                        <h4>Preprocessed CNN Input</h4>
+                        <span class="text-muted text-xs">48 &times; 48 Grayscale</span>
+                    </div>
+                    <div class="crop-body">
+                        <img src="{{ crop_image }}" alt="Cropped Preprocessed Face" class="face-crop-img">
+                        <div class="crop-info">
+                            {% if face_detected and bbox %}
+                                <p><strong>Bounding Box:</strong> x={{ bbox[0] }}, y={{ bbox[1] }}, w={{ bbox[2] }}, h={{ bbox[3] }}</p>
+                                <p class="text-xs text-muted">Facial ROI cropped with safety margin, converted to single-channel luminance, and scaled to [0.0, 1.0].</p>
+                            {% else %}
+                                <p class="text-warning">No frontal face Haar pattern matched. Model analyzed entire image as fallback.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: Prediction Classification & 7-Class Distribution -->
+        <div class="result-metrics-col">
+
+            <!-- Primary Prediction Hero Banner -->
+            <div class="hero-prediction-box" style="--pred-color: {{ color }}; --pred-shadow: {{ color }}33; border-color: var(--pred-color); box-shadow: 0 8px 30px -4px var(--pred-shadow);">
+                <div class="hero-pred-top">
+                    <span class="hero-pred-tag">Top Predicted Expression</span>
+                    <span class="hero-pred-conf">{{ confidence }}% Confidence</span>
+                </div>
+                <h1 class="hero-pred-label" style="color: var(--pred-color);">
+                    {{ predicted_label }}
+                </h1>
+                <p class="hero-pred-desc">
+                    <strong>Observable Action Units:</strong> {{ description }}
+                </p>
+
+                {% if is_uncertain %}
+                <div class="uncertain-banner">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>{{ uncertainty_note or "Confidence is below the certainty threshold. Visible cues suggest mixed facial muscle tension." }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 7-Class Probability Distribution Chart -->
+            <div class="prob-distribution-card">
+                <div class="prob-header">
+                    <h4>Softmax Probability Distribution Across 7 Classes</h4>
+                    <span class="prob-unit">% activation</span>
+                </div>
+
+                <div class="prob-list">
+                    {% for name in class_names %}
+                    <div class="prob-row {% if name == predicted_label %}active-emotion-row{% endif %}" id="res-row-{{ name }}" style="--row-color: {{ class_colors[name] }};">
+                        <div class="prob-meta">
+                            <span class="prob-name">
+                                <span class="emotion-color-dot" style="background-color: var(--row-color);"></span>
+                                {{ name }}
+                            </span>
+                            <span class="prob-val">{{ probabilities[name] }}%</span>
+                        </div>
+                        <div class="prob-track">
+                            <div class="prob-bar" style="--bar-width: {{ probabilities[name] }}%; background-color: var(--row-color); width: var(--bar-width);"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="chart-footer-note">
+                    * Scores represent relative mathematical probabilities computed by the Softmax classification layer.
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="result-actions">
+                <a href="{{ url_for('index') }}#pane-upload" class="btn btn-primary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Analyze Another Image
+                </a>
+                <a href="{{ url_for('index') }}#pane-webcam" class="btn btn-secondary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                    Launch Live Webcam
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

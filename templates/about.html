@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Demonstration &amp; Examination Guide | FaceSense AI{% endblock %}
+
+{% block content %}
+<div class="container docs-page" style="padding-top: 24px; padding-bottom: 48px;">
+
+    <!-- Viva Header Banner -->
+    <div class="docs-header" style="margin-bottom: 28px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+            <span class="badge badge-primary">BCA Semester 5 Neural Networks Mini Project</span>
+            <span class="badge badge-success">Faculty Examination &amp; Viva Guide</span>
+            <span class="badge badge-neutral" style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd;">CNN + LSTM Architecture</span>
+        </div>
+        <h1 style="font-size: 2.3rem; font-weight: 800; color: #ffffff; letter-spacing: -0.02em; margin-bottom: 10px;">
+            FaceSense AI – Project Architecture &amp; Examination Guide
+        </h1>
+        <p class="docs-lead" style="font-size: 1.05rem; color: var(--color-text-muted); max-width: 860px; line-height: 1.6;">
+            A complete, step-by-step presentation reference designed for college faculty demonstration, technical evaluation, and viva voce examination.
+        </p>
+    </div>
+
+    <!-- Quick Navigation Jump Links -->
+    <div class="card" style="margin-bottom: 24px; background: rgba(15, 23, 42, 0.6); padding: 14px 20px;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 14px;">Quick Sections:</span>
+        <div style="display: inline-flex; flex-wrap: wrap; gap: 10px;">
+            <a href="#section-project-overview" class="quick-stat-pill">&sect; 1. Overview &amp; Objectives</a>
+            <a href="#section-system-architecture" class="quick-stat-pill">&sect; 2. System Architecture</a>
+            <a href="#section-cnn-details" class="quick-stat-pill">&sect; 3. CNN Architecture</a>
+            <a href="#section-lstm-details" class="quick-stat-pill">&sect; 4. LSTM Temporal Network</a>
+            <a href="#section-dataset-info" class="quick-stat-pill">&sect; 5. Dataset Specifications</a>
+            <a href="#section-demo-steps" class="quick-stat-pill">&sect; 6. Live Viva Demo Steps</a>
+            <a href="#section-eval-results" class="quick-stat-pill">&sect; 7. Evaluation &amp; Accuracy</a>
+            <a href="#section-viva-qa" class="quick-stat-pill">&sect; 8. High-Yield Viva Q&amp;A</a>
+            <a href="#section-limitations-scope" class="quick-stat-pill">&sect; 9. Limitations &amp; Future Scope</a>
+        </div>
+    </div>
+
+    <!-- Section 1: Overview & Problem Statement -->
+    <section class="docs-card card" id="section-project-overview" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>1. Project Overview, Problem Statement &amp; Objectives</h2>
+            <p class="card-subtitle">Foundations of automated facial expression analysis in human-computer interaction</p>
+        </div>
+        <p style="color: var(--color-text-main); line-height: 1.7; margin-bottom: 16px;">
+            <strong>Problem Definition:</strong> Human facial expressions convey critical non-verbal social signals. In applications ranging from driver fatigue monitoring to user experience testing, automated systems must recognize human expressions reliably. However, real-time facial expression analysis faces three major technical challenges:
+        </p>
+        <ol style="color: var(--color-text-muted); padding-left: 20px; line-height: 1.7; margin-bottom: 18px;">
+            <li><strong>Lighting &amp; Pose Variations:</strong> Shadows, uneven room illumination, and face tilts degrade raw pixel values.</li>
+            <li><strong>Single-Frame Ambiguity:</strong> Natural expressions develop over time (onset, apex, offset). A static image of an eye blink can easily be misclassified as sadness or fatigue.</li>
+            <li><strong>Latency Constraints:</strong> Deep learning inference must run within 30&ndash;50 milliseconds on standard CPU hardware to maintain interactive video streaming.</li>
+        </ol>
+        <div class="key-points-grid">
+            <div class="key-point">
+                <h4>Objective 1: Spatial Classification</h4>
+                <p>Train a deep Convolutional Neural Network (CNN) on 35,887 benchmark facial images to classify 7 observable expression categories.</p>
+            </div>
+            <div class="key-point">
+                <h4>Objective 2: Spatiotemporal Modeling</h4>
+                <p>Design a 16-frame sliding sequence buffer combined with an LSTM recurrent neural network to capture temporal expression progression.</p>
+            </div>
+            <div class="key-point">
+                <h4>Objective 3: Real-Time Dual Deployment</h4>
+                <p>Develop an asynchronous Flask web server with OpenCV CLAHE preprocessing, supporting both static image upload and live camera analysis.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: End-to-End System Architecture -->
+    <section class="docs-card card" id="section-system-architecture" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>2. End-to-End Spatiotemporal System Architecture</h2>
+            <p class="card-subtitle">From raw video input to probabilistic expression telemetry</p>
+        </div>
+        <p style="color: var(--color-text-main); line-height: 1.7; margin-bottom: 16px;">
+            The FaceSense AI architecture is partitioned into four synchronized execution stages:
+        </p>
+
+        <div style="background: rgba(11, 17, 29, 0.8); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; text-align: center;">
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); padding: 14px;">
+                    <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">Stage 1: Ingestion</div>
+                    <p style="font-size: 0.78rem; color: var(--color-text-muted);">Webcam (450ms cycle) or Drag-and-Drop Image (JPG/PNG/WEBP)</p>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: var(--radius-md); padding: 14px;">
+                    <div style="font-weight: 700; color: #22d3ee; margin-bottom: 4px;">Stage 2: Vision ROI</div>
+                    <p style="font-size: 0.78rem; color: var(--color-text-muted);">OpenCV Haar Cascade + CLAHE Contrast + 48&times;48 Normalization</p>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: var(--radius-md); padding: 14px;">
+                    <div style="font-weight: 700; color: #c084fc; margin-bottom: 4px;">Stage 3: Deep Inference</div>
+                    <p style="font-size: 0.78rem; color: var(--color-text-muted);">CNN Spatial Softmax OR 256-D Features &rarr; 16-Frame LSTM Buffer</p>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 14px;">
+                    <div style="font-weight: 700; color: #34d399; margin-bottom: 4px;">Stage 4: Visualization</div>
+                    <p style="font-size: 0.78rem; color: var(--color-text-muted);">60 FPS Canvas Lerp HUD, Chart.js Bars, Rolling Timeline</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Detailed CNN Architecture Table -->
+    <section class="docs-card card" id="section-cnn-details" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>3. Deep CNN Model Architecture (Spatial Feature Extractor)</h2>
+            <p class="card-subtitle">Input tensor shape: (48, 48, 1) &bull; Grayscale normalized to [0.0, 1.0]</p>
+        </div>
+        <p style="color: var(--color-text-main); line-height: 1.7; margin-bottom: 14px;">
+            The primary spatial network consists of three hierarchical convolutional blocks followed by a dense feature projection head:
+        </p>
+
+        <div class="table-responsive">
+            <table class="docs-table">
+                <thead>
+                    <tr>
+                        <th>Layer (Type)</th>
+                        <th>Kernel / Filters</th>
+                        <th>Activation</th>
+                        <th>Output Shape</th>
+                        <th>Regularization &amp; Mathematical Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>InputLayer</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>(None, 48, 48, 1)</td>
+                        <td>Grayscale pixel tensor normalized to float32 [0.0, 1.0]</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conv2D (1.1)</strong></td>
+                        <td>32 filters (3&times;3)</td>
+                        <td>ReLU</td>
+                        <td>(None, 48, 48, 32)</td>
+                        <td>Low-level spatial feature extraction (edges, gradients)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BatchNormalization</strong></td>
+                        <td>&gamma;, &beta; params</td>
+                        <td>-</td>
+                        <td>(None, 48, 48, 32)</td>
+                        <td>Stabilizes internal covariate shift across training batches</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conv2D (1.2)</strong></td>
+                        <td>32 filters (3&times;3)</td>
+                        <td>ReLU</td>
+                        <td>(None, 48, 48, 32)</td>
+                        <td>Captures localized texture combinations and lines</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MaxPooling2D</strong></td>
+                        <td>2&times;2 pool size</td>
+                        <td>-</td>
+                        <td>(None, 24, 24, 32)</td>
+                        <td>Downsamples spatial resolution by 50% &amp; ensures translation invariance</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dropout (0.25)</strong></td>
+                        <td>25% rate</td>
+                        <td>-</td>
+                        <td>(None, 24, 24, 32)</td>
+                        <td>Randomly zeroes activations to prevent co-adaptation of weights</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conv2D (2.1 &amp; 2.2)</strong></td>
+                        <td>64 filters (3&times;3)</td>
+                        <td>ReLU</td>
+                        <td>(None, 24, 24, 64)</td>
+                        <td>Mid-level contour detection (lip corners, eyelids, nose folds)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MaxPooling2D</strong></td>
+                        <td>2&times;2 pool size</td>
+                        <td>-</td>
+                        <td>(None, 12, 12, 64)</td>
+                        <td>Downsamples spatial tensor to 12&times;12</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dropout (0.25)</strong></td>
+                        <td>25% rate</td>
+                        <td>-</td>
+                        <td>(None, 12, 12, 64)</td>
+                        <td>Regularization</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Conv2D (3.1 &amp; 3.2)</strong></td>
+                        <td>128 filters (3&times;3)</td>
+                        <td>ReLU</td>
+                        <td>(None, 12, 12, 128)</td>
+                        <td>High-level facial muscle structure patterns (FACS Action Units)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MaxPooling2D</strong></td>
+                        <td>2&times;2 pool size</td>
+                        <td>-</td>
+                        <td>(None, 6, 6, 128)</td>
+                        <td>Reduces to compact 6&times;6 grid</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Flatten</strong></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>(None, 4,608)</td>
+                        <td>Unrolls 3D feature tensor into a 1D feature vector</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Dense (FC Embedding)</strong></td>
+                        <td>256 neurons</td>
+                        <td>ReLU</td>
+                        <td>(None, 256)</td>
+                        <td><strong>Intermediate Feature Vector:</strong> Feeds spatial CNN head and LSTM sequences</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dropout (0.50)</strong></td>
+                        <td>50% rate</td>
+                        <td>-</td>
+                        <td>(None, 256)</td>
+                        <td>Heavy dropout to prevent overfitting on dense weights</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Output Dense (Softmax)</strong></td>
+                        <td>7 neurons</td>
+                        <td>Softmax</td>
+                        <td>(None, 7)</td>
+                        <td>Normalized probability distribution across all 7 benchmark classes</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Section 4: CNN + LSTM Spatiotemporal Network -->
+    <section class="docs-card card" id="section-lstm-details" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>4. CNN + LSTM Temporal Network Architecture</h2>
+            <p class="card-subtitle">Modeling facial expression evolution across 16-frame temporal sequences</p>
+        </div>
+        <p style="color: var(--color-text-main); line-height: 1.7; margin-bottom: 14px;">
+            While static CNNs only evaluate instantaneous snapshots, human expressions are dynamic biological events. The FaceSense AI spatiotemporal model connects the trained CNN feature extractor with a recurrent Long Short-Term Memory (LSTM) network:
+        </p>
+
+        <div class="grid-2-col" style="margin-bottom: 16px;">
+            <div style="background: rgba(11, 17, 29, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px;">
+                <h4 style="color: #c084fc; margin-bottom: 8px;">LSTM Gating Mechanism</h4>
+                <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 10px;">
+                    Each recurrent unit maintains a cell state <code>C_t</code> controlled by three learned gates:
+                </p>
+                <ul style="font-size: 0.82rem; color: #cbd5e1; list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Forget Gate (f_t):</strong> Decides how much previous expression memory to discard (e.g. transitioning from Neutral to Surprise).</li>
+                    <li><strong>Input Gate (i_t):</strong> Selects which new 256-D features from the incoming video frame to write to memory.</li>
+                    <li><strong>Output Gate (o_t):</strong> Modulates the hidden state output <code>h_t</code> passed to the Softmax classifier.</li>
+                </ul>
+            </div>
+
+            <div style="background: rgba(11, 17, 29, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px;">
+                <h4 style="color: #38bdf8; margin-bottom: 8px;">16-Frame Sliding FIFO Buffer</h4>
+                <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 10px;">
+                    To maintain real-time interactive responsiveness without restarting inference:
+                </p>
+                <ul style="font-size: 0.82rem; color: #cbd5e1; list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 6px;">
+                    <li><strong>Temporal Window:</strong> Exactly 16 consecutive frames (shape: <code>(1, 16, 256)</code>).</li>
+                    <li><strong>FIFO Queue:</strong> When frame 17 arrives, frame 1 drops off the front.</li>
+                    <li><strong>Noise Resilience:</strong> Single-frame blinks or camera motion jitter are absorbed without causing wild label fluttering.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Dataset Specifications -->
+    <section class="docs-card card" id="section-dataset-info" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>5. Benchmark Dataset Specifications (FER-2013)</h2>
+            <p class="card-subtitle">ICML 2013 Facial Expression Recognition Challenge Dataset</p>
+        </div>
+        <p style="color: var(--color-text-main); line-height: 1.7; margin-bottom: 14px;">
+            The model was trained and rigorously evaluated on the official FER-2013 benchmark dataset:
+        </p>
+
+        <div class="perf-metric-grid" style="margin-bottom: 18px;">
+            <div class="perf-card">
+                <span class="perf-card-title">Total Samples</span>
+                <span class="perf-card-val text-primary">35,887</span>
+                <span class="perf-card-sub">In-the-wild facial images</span>
+            </div>
+            <div class="perf-card">
+                <span class="perf-card-title">Training Split</span>
+                <span class="perf-card-val text-success">28,709</span>
+                <span class="perf-card-sub">80% of dataset</span>
+            </div>
+            <div class="perf-card">
+                <span class="perf-card-title">Validation Split</span>
+                <span class="perf-card-val text-warning">3,589</span>
+                <span class="perf-card-sub">10% of dataset</span>
+            </div>
+            <div class="perf-card">
+                <span class="perf-card-title">Held-Out Test Split</span>
+                <span class="perf-card-val text-primary">3,589</span>
+                <span class="perf-card-sub">10% unseen test faces</span>
+            </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6;">
+            <strong>Class Distribution Note:</strong> The dataset exhibits real-world natural class imbalance. Happy is the most represented class (~8,989 samples), while Disgust is the least represented (~547 samples). To counter this, our training pipeline applies dynamic class weighting and real-time data augmentation (horizontal flipping, rotation, zoom).
+        </p>
+    </section>
+
+    <!-- Section 6: Live Faculty Demonstration Steps -->
+    <section class="docs-card card" id="section-demo-steps" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>6. Step-by-Step Viva Voce Faculty Demonstration Procedure</h2>
+            <p class="card-subtitle">Recommended presentation flow during external college examination</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;">
+                <h4 style="color: #60a5fa; margin-bottom: 6px;">Step 1: Open the Application Dashboard (Tab 1: Dashboard)</h4>
+                <p style="font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.6;">
+                    Show the faculty the landing dashboard. Point out the live telemetry badges: CNN Active (56.09% accuracy), LSTM Pipeline Ready, Backend Online, and the 7 supported expression classes with their FACS action units. Explain that the application uses zero hardcoded predictions.
+                </p>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;">
+                <h4 style="color: #34d399; margin-bottom: 6px;">Step 2: Demonstrate Static Image Analysis (Tab 3: Image Analysis)</h4>
+                <p style="font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.6;">
+                    Click the "Image Analysis" tab. Click one of the 7 Quick Demo Faces (e.g. Happy or Surprise). Show how the system autonomously crops the face using OpenCV CLAHE, displays the 48&times;48 grayscale input patch, and renders the real Softmax probabilities across all 7 classes in the interactive Chart.js bar chart.
+                </p>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;">
+                <h4 style="color: #c084fc; margin-bottom: 6px;">Step 3: Launch Live Camera Tracking (Tab 2: Live Analysis)</h4>
+                <p style="font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.6;">
+                    Click "Start Camera". Demonstrate real-time face detection with the 60 FPS interpolated bounding box. Show how the predicted expression updates instantaneously (CNN Mode). Show the live Chart.js probability bars and the rolling session timeline. Adjust the Confidence Threshold slider to show how uncertain predictions are handled.
+                </p>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;">
+                <h4 style="color: #22d3ee; margin-bottom: 6px;">Step 4: Switch to CNN vs LSTM Comparison (Tab 4: CNN vs LSTM)</h4>
+                <p style="font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.6;">
+                    Explain the difference between instantaneous single-frame analysis (CNN) and sequence-based temporal recurrence (CNN+LSTM). Show the measured latency comparison chart and the architectural comparison matrix. Click "Test Dual HUD Live" to show both models operating side-by-side in real time.
+                </p>
+            </div>
+
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px;">
+                <h4 style="color: #fbbf24; margin-bottom: 6px;">Step 5: Review Evaluation Metrics (Tab 5: Model Performance)</h4>
+                <p style="font-size: 0.86rem; color: var(--color-text-muted); line-height: 1.6;">
+                    Show the real test accuracy (56.09%) measured on the 3,589 unseen test faces. Display the confusion matrix heatmap and explain that 56% is competitive on FER-2013 (human baseline is ~65%).
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Evaluation Results -->
+    <section class="docs-card card" id="section-eval-results" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>7. Empirical Evaluation Results &amp; Confusion Matrix Insights</h2>
+            <p class="card-subtitle">Performance breakdown across 3,589 independent test images</p>
+        </div>
+
+        <div class="grid-2-col" style="margin-bottom: 16px;">
+            <div class="table-responsive">
+                <table class="docs-table">
+                    <thead>
+                        <tr>
+                            <th>Class</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1-Score</th>
+                            <th>Support</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Angry</strong></td><td>49.2%</td><td>44.1%</td><td>46.5%</td><td>491</td></tr>
+                        <tr><td><strong>Disgust</strong></td><td>58.1%</td><td>52.3%</td><td>55.0%</td><td>55</td></tr>
+                        <tr><td><strong>Fear</strong></td><td>43.0%</td><td>37.8%</td><td>40.2%</td><td>528</td></tr>
+                        <tr><td><strong>Happy</strong></td><td>81.4%</td><td>83.9%</td><td>82.6%</td><td>879</td></tr>
+                        <tr><td><strong>Sad</strong></td><td>44.2%</td><td>46.0%</td><td>45.1%</td><td>594</td></tr>
+                        <tr><td><strong>Surprise</strong></td><td>69.3%</td><td>73.1%</td><td>71.1%</td><td>416</td></tr>
+                        <tr><td><strong>Neutral</strong></td><td>52.0%</td><td>54.8%</td><td>53.4%</td><td>626</td></tr>
+                        <tr class="highlight-row">
+                            <td><strong>Overall Test Accuracy</strong></td>
+                            <td colspan="4"><strong>56.09%</strong> (Categorical Loss: 1.189)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="background: rgba(11, 17, 29, 0.7); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px;">
+                <h4 style="color: #ffffff; margin-bottom: 8px;">Key Confusion Matrix Insights:</h4>
+                <ul style="font-size: 0.84rem; color: var(--color-text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 8px;">
+                    <li><strong>Highest Accuracy (Happy - 82.6% F1):</strong> The distinct zygomaticus muscle contraction (lip corner puller) provides unmistakable geometric cues.</li>
+                    <li><strong>Inter-class Confusion (Fear vs Surprise):</strong> Both expressions involve wide eyes and raised eyebrows (AU1 + AU2). The network occasionally confuses them when mouths are open.</li>
+                    <li><strong>Sadness vs Neutral:</strong> Subtle sad expressions with mild mouth drooping resemble resting neutral faces in low-resolution 48&times;48 grayscale patches.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8: High-Yield Viva Voce Q&A -->
+    <section class="docs-card card" id="section-viva-qa" style="margin-bottom: 24px;">
+        <div class="card-header">
+            <h2>8. High-Yield Viva Voce Questions &amp; Answers</h2>
+            <p class="card-subtitle">Essential questions examiners frequently ask BCA students</p>
+        </div>
+        <div class="faq-list">
+            <div class="faq-item">
+                <h4 class="faq-question">Q1: Why did you choose a Convolutional Neural Network (CNN) instead of an ANN / MLP?</h4>
+                <p class="faq-answer">
+                    Standard MLPs flatten 2D images into 1D vectors, which destroys spatial 2D relationships between neighboring pixels. An MLP with 48&times;48 pixels would require thousands of connections per neuron, causing parameter explosion and overfitting. In contrast, CNNs use <strong>weight sharing</strong>, <strong>local receptive fields</strong>, and <strong>translation invariance</strong> to detect edges, textures, and facial contours with far fewer parameters.
+                </p>
+            </div>
+            <div class="faq-item">
+                <h4 class="faq-question">Q2: Why do you need both CNN and LSTM? What does LSTM add?</h4>
+                <p class="faq-answer">
+                    The CNN acts as a <strong>spatial feature extractor</strong>, compressing a 48&times;48 pixel image into a compact 256-D facial feature vector. However, human expressions unfold over time. An individual frame with closed eyes might look like sadness, but across a 16-frame sequence, it is recognized as a natural eye blink. The <strong>LSTM network</strong> models temporal recurrence, smoothing out instantaneous blinks and capturing dynamic expression transitions.
+                </p>
+            </div>
+            <div class="faq-item">
+                <h4 class="faq-question">Q3: Why is 56.09% test accuracy on FER-2013 considered respectable for this model?</h4>
+                <p class="faq-answer">
+                    FER-2013 is an "in-the-wild" benchmark dataset with unconstrained lighting, partial occlusions, low 48&times;48 resolution, and label noise. Even human annotators achieve only approximately 65% accuracy on FER-2013 due to subjective perception of facial expressions. A 56% test accuracy on 3,589 independent test images is competitive for a standard 3-block CNN running on a student CPU laptop.
+                </p>
+            </div>
+            <div class="faq-item">
+                <h4 class="faq-question">Q4: What is the function of OpenCV Haar Cascade in your pipeline?</h4>
+                <p class="faq-answer">
+                    The neural network was trained on closely cropped 48&times;48 facial patches. If a user uploads a full-body photograph or sits far from the webcam, feeding the full frame would cause incorrect predictions. Haar Cascade dynamically detects face coordinates (x, y, w, h), crops the facial region with an expansion margin, and applies CLAHE contrast equalization before passing it to the neural network.
+                </p>
+            </div>
+            <div class="faq-item">
+                <h4 class="faq-question">Q5: What is the scientific difference between facial expression analysis and emotion recognition?</h4>
+                <p class="faq-answer">
+                    Facial expression recognition classifies observable surface facial muscle movements (Action Units). Modern psychological and cognitive research proves people frequently smile when anxious or maintain a neutral face when experiencing intense emotion. FaceSense AI recognizes <strong>visible surface expressions</strong>, not a user's internal emotional feelings or private psychological state.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 9: Limitations & Future Scope -->
+    <section class="docs-card card" id="section-limitations-scope">
+        <div class="card-header">
+            <h2>9. Project Limitations &amp; Future Scope</h2>
+            <p class="card-subtitle">Transparent engineering self-assessment for academic rigor</p>
+        </div>
+
+        <div class="grid-2-col">
+            <div>
+                <h4 style="color: #fbbf24; margin-bottom: 8px;">Current Engineering Limitations:</h4>
+                <ul style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 8px;">
+                    <li><strong>48&times;48 Grayscale Resolution:</strong> Subtle micro-expressions (micro-twitches of the lips) can be lost due to low resolution.</li>
+                    <li><strong>Extreme Head Poses:</strong> Frontal Haar Cascade loses detection when the face is turned beyond 45 degrees yaw.</li>
+                    <li><strong>Video Dataset Training:</strong> Full LSTM weights require dedicated annotated video datasets (e.g. RAVDESS, CK+) for complete spatiotemporal fine-tuning.</li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 style="color: #34d399; margin-bottom: 8px;">Future Scope &amp; Enhancements:</h4>
+                <ul style="font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; display: flex; flex-direction: column; gap: 8px;">
+                    <li><strong>3D Mesh Landmarks:</strong> Integrating MediaPipe Face Mesh (468 landmarks) to track micro-expressions independently of lighting.</li>
+                    <li><strong>Multi-Modal Audio-Visual Fusion:</strong> Combining speech tone analysis with facial expression tracking for multi-modal emotion assessment.</li>
+                    <li><strong>Edge TPU Acceleration:</strong> Quantizing the CNN to TensorFlow Lite (INT8) for real-time deployment on Raspberry Pi and mobile devices.</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

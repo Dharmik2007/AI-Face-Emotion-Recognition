@@ -1,0 +1,1133 @@
+{% extends "base.html" %}
+
+{% block title %}FaceSense AI – Real-Time Facial Expression Analysis Using CNN &amp; LSTM{% endblock %}
+
+{% block content %}
+<div class="container dashboard-container">
+
+    <!-- Top Streamlined Announcement / Missing Model Notice (if applicable) -->
+    {% if not model_available %}
+    <div class="card model-notice-card" style="margin-top: 16px;">
+        <div class="model-notice-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        <div class="model-notice-content">
+            <h3>CNN Model File Required (model/fer_cnn_model.keras)</h3>
+            <p>
+                To run predictions, execute the training pipeline in your terminal:
+            </p>
+            <div class="code-terminal">
+                <code>python training/train.py --dataset dataset/fer2013.csv</code>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Dashboard Main Navigation Tabs (5 Integrated Sections) -->
+    <div class="dashboard-tabs">
+        <button type="button" class="tab-btn {% if active_tab == 'dashboard' %}active{% endif %}" id="tab-dashboard-btn"
+            onclick="switchTab('dashboard')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Dashboard</span>
+        </button>
+        <button type="button" class="tab-btn {% if active_tab == 'webcam' %}active{% endif %}" id="tab-webcam-btn"
+            onclick="switchTab('webcam')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"></path>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            </svg>
+            <span>Live Analysis</span>
+            <span class="tab-pill-active">Real-Time</span>
+        </button>
+        <button type="button" class="tab-btn {% if active_tab == 'upload' %}active{% endif %}" id="tab-upload-btn"
+            onclick="switchTab('upload')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Image Analysis</span>
+        </button>
+        <button type="button" class="tab-btn {% if active_tab == 'compare' %}active{% endif %}" id="tab-compare-btn"
+            onclick="switchTab('compare')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="18"></rect>
+                <rect x="14" y="3" width="7" height="18"></rect>
+            </svg>
+            <span>CNN vs LSTM</span>
+        </button>
+        <button type="button" class="tab-btn {% if active_tab == 'performance' %}active{% endif %}"
+            id="tab-performance-btn" onclick="switchTab('performance')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span>Model Performance</span>
+        </button>
+    </div>
+
+    <!-- ==================== TAB 0: DASHBOARD HOME ==================== -->
+    <div class="tab-pane {% if active_tab == 'dashboard' %}active{% endif %}" id="pane-dashboard">
+
+        <!-- Hero Banner with Live Telemetry -->
+        <div class="dashboard-hero-banner">
+            <div class="dashboard-hero-grid">
+                <div>
+                    <div class="hero-badge" style="margin-bottom: 14px;">
+                        <span class="hero-badge-dot"></span>
+                        Deep Learning Spatiotemporal Computer Vision
+                    </div>
+                    <h1 class="dashboard-hero-title">
+                        FaceSense <span class="text-gradient">AI</span> – Real-Time Facial Analysis
+                    </h1>
+                    <p class="dashboard-hero-desc">
+                        A dual-architecture deep learning system evaluating human facial expressions in real-time.
+                        Combining spatial feature representation via <strong>Deep CNNs</strong> with temporal pattern
+                        recurrence via <strong>16-frame LSTMs</strong>.
+                    </p>
+                    <div class="dashboard-quick-actions">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="switchTab('webcam')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Start Live Camera Analysis
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-lg" onclick="switchTab('upload')">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Upload Facial Image
+                        </button>
+                        <button type="button" class="btn btn-ghost" onclick="switchTab('compare')">
+                            CNN vs LSTM Specs &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live System Telemetry Card -->
+                <div class="dashboard-telemetry-panel">
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot green"></span> CNN Spatial Model
+                        </span>
+                        <span class="telemetry-value" style="color: #34d399;">
+                            {% if model_available %}Active (56.09% Acc){% else %}Offline{% endif %}
+                        </span>
+                    </div>
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot purple"></span> LSTM Temporal Pipeline
+                        </span>
+                        <span class="telemetry-value" style="color: #c084fc;">
+                            {% if lstm_available %}Active{% else %}Pipeline Ready{% endif %}
+                        </span>
+                    </div>
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot blue"></span> Benchmark Dataset
+                        </span>
+                        <span class="telemetry-value">FER-2013 (35,887 Faces)</span>
+                    </div>
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot cyan"></span> Intermediate Embedding
+                        </span>
+                        <span class="telemetry-value">256-D Normalized Vector</span>
+                    </div>
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot gray"></span> Temporal Window Size
+                        </span>
+                        <span class="telemetry-value">{{ sequence_length }} Sequential Frames</span>
+                    </div>
+                    <div class="telemetry-row-item">
+                        <span class="telemetry-label">
+                            <span class="pill-dot green"></span> Processing Latency
+                        </span>
+                        <span class="telemetry-value" style="color: #38bdf8;">~18 &ndash; 25 ms / frame</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Real System Status Cards -->
+        <div class="system-status-grid">
+            <div class="system-status-card">
+                <div class="status-card-header">
+                    <span class="status-card-title">CNN Spatial Model</span>
+                    <div class="status-card-icon blue">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="12 8 8 12 12 16 12 8"></polygon>
+                        </svg>
+                    </div>
+                </div>
+                <div class="status-card-main">
+                    {% if model_available %}<span style="color: #34d399;">Active</span>{% else %}<span
+                        style="color: #fbbf24;">Offline</span>{% endif %}
+                </div>
+                <p class="status-card-sub">
+                    Trained on 35,887 FER-2013 faces. 3 Conv blocks with BatchNorm and Dropout.
+                </p>
+            </div>
+
+            <div class="system-status-card">
+                <div class="status-card-header">
+                    <span class="status-card-title">LSTM Spatiotemporal</span>
+                    <div class="status-card-icon purple">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <div class="status-card-main">
+                    {% if lstm_available %}<span style="color: #34d399;">Active</span>{% else %}<span
+                        style="color: #c084fc;">Pipeline Ready</span>{% endif %}
+                </div>
+                <p class="status-card-sub">
+                    Sliding 16-frame sequence buffer. 256-D feature embeddings with recurrent gates.
+                </p>
+            </div>
+
+            <div class="system-status-card">
+                <div class="status-card-header">
+                    <span class="status-card-title">Backend Architecture</span>
+                    <div class="status-card-icon green">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="status-card-main">
+                    <span style="color: #38bdf8;">Flask 3.1 &bull; TF 2.21</span>
+                </div>
+                <p class="status-card-sub">
+                    Python 3.13 runtime, OpenCV CLAHE face detection, thread-safe session queues.
+                </p>
+            </div>
+
+            <div class="system-status-card">
+                <div class="status-card-header">
+                    <span class="status-card-title">Inference Speed</span>
+                    <div class="status-card-icon cyan">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 14 14"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                <div class="status-card-main">
+                    <span style="color: #34d399;">~20 ms / frame</span>
+                </div>
+                <p class="status-card-sub">
+                    Smooth 60 FPS interpolated canvas overlay, real-time EMA probability smoothing.
+                </p>
+            </div>
+        </div>
+
+        <!-- Supported Expression Categories Matrix -->
+        <div class="card" style="margin-bottom: 28px;">
+            <div class="section-heading-row">
+                <div>
+                    <h3 class="section-main-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                        7 Supported Benchmark Facial Expression Categories
+                    </h3>
+                    <p class="text-muted text-sm">
+                        Classified according to the Facial Action Coding System (FACS) action units (AU) observed in
+                        facial musculature.
+                    </p>
+                </div>
+                <span class="badge badge-neutral"
+                    style="background: rgba(255, 255, 255, 0.05); color: #cbd5e1;">FER-2013 Taxonomy</span>
+            </div>
+
+            <div class="expressions-grid">
+                {% for name in class_names %}
+                <div class="expression-category-card" style="--card-color: {{ class_colors[name] }};">
+                    <div class="expr-avatar-box">
+                        <img src="{{ url_for('static', filename='images/sample_faces/' ~ name.lower() ~ '_sample.png') }}"
+                            alt="{{ name }} Expression">
+                    </div>
+                    <div class="expr-label-row">
+                        <span class="emotion-color-dot" style="background-color: var(--card-color);"></span>
+                        <span class="expr-name">{{ name }}</span>
+                    </div>
+                    <div class="expr-facs-tag">
+                        {% if name == 'Angry' %}AU4 Brow Lowerer + AU7 Lids
+                        {% elif name == 'Disgust' %}AU9 Nose Wrinkler + AU10
+                        {% elif name == 'Fear' %}AU1+2 Brow Raise + AU20
+                        {% elif name == 'Happy' %}AU6 Cheek Raise + AU12 Lip
+                        {% elif name == 'Sad' %}AU1 Brow Raise + AU15 Depr
+                        {% elif name == 'Surprise' %}AU1+2 Brow + AU26 Jaw
+                        {% elif name == 'Neutral' %}Baseline Resting State
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Technology Overview Grid -->
+        <div class="section-heading-row" style="margin-bottom: 12px;">
+            <h3 class="section-main-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+                Core Technologies &amp; Architecture
+            </h3>
+        </div>
+
+        <div class="tech-overview-grid">
+            <div class="tech-spec-card" style="--card-accent: #8b5cf6;">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polygon points="12 8 8 12 12 16 12 8"></polygon>
+                    </svg>
+                    Deep Neural Networks
+                </h4>
+                <p>Multi-stage 2D Convolutions with Batch Normalization, Spatial Pooling, Dropout regularization, and
+                    256-D Dense representation.</p>
+                <div class="tech-spec-pills">
+                    <span class="tech-spec-pill">TensorFlow 2.21</span>
+                    <span class="tech-spec-pill">Keras 3</span>
+                    <span class="tech-spec-pill">Adam Opt</span>
+                </div>
+            </div>
+
+            <div class="tech-spec-card" style="--card-accent: #3b82f6;">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 2a10 10 0 0 1 10 10c0 5.5-4.5 10-10 10S2 17.5 2 12"></path>
+                    </svg>
+                    Computer Vision
+                </h4>
+                <p>Automated face ROI detection, CLAHE adaptive histogram equalization for contrast invariance, and 60
+                    FPS lerp HUD interpolation.</p>
+                <div class="tech-spec-pills">
+                    <span class="tech-spec-pill">OpenCV 4.14</span>
+                    <span class="tech-spec-pill">Haar Cascade</span>
+                    <span class="tech-spec-pill">CLAHE Norm</span>
+                </div>
+            </div>
+
+            <div class="tech-spec-card" style="--card-accent: #10b981;">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                    </svg>
+                    Backend API Server
+                </h4>
+                <p>Asynchronous multi-threaded Python server, thread-safe sequence buffer session queues, base64 frame
+                    serialization, and JSON telemetry.</p>
+                <div class="tech-spec-pills">
+                    <span class="tech-spec-pill">Python 3.13</span>
+                    <span class="tech-spec-pill">Flask 3.1</span>
+                    <span class="tech-spec-pill">RESTful API</span>
+                </div>
+            </div>
+
+            <div class="tech-spec-card" style="--card-accent: #06b6d4;">
+                <h4>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Interactive Analytics
+                </h4>
+                <p>Real-time 7-class probability bar chart, rolling temporal prediction timeline, zero layout shift DOM,
+                    and high-contrast dark theme.</p>
+                <div class="tech-spec-pills">
+                    <span class="tech-spec-pill">Chart.js 4.4</span>
+                    <span class="tech-spec-pill">Vanilla JS</span>
+                    <span class="tech-spec-pill">CSS Glassmorphism</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== TAB 1: LIVE WEBCAM ==================== -->
+    <div class="tab-pane {% if active_tab == 'webcam' %}active{% endif %}" id="pane-webcam">
+        <div class="grid-2-col" id="webcam-main-grid">
+            <!-- Left Column: Webcam Viewport & Controls -->
+            <div class="card viewport-card" id="webcam-viewport-card">
+
+                <!-- Mode Switcher (CNN vs CNN+LSTM vs Compare) -->
+                <div class="model-mode-selector" id="model-mode-selector">
+                    <button type="button" class="mode-btn active" id="mode-cnn-btn" onclick="setAnalysisMode('cnn')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="12 8 8 12 12 16 12 8"></polygon>
+                        </svg>
+                        <span>CNN Mode</span>
+                        <span class="mode-badge">Spatial</span>
+                    </button>
+                    <button type="button" class="mode-btn" id="mode-lstm-btn" onclick="setAnalysisMode('lstm')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <span>CNN + LSTM Mode</span>
+                        <span class="mode-badge">{{ sequence_length }}-Frame Temporal</span>
+                    </button>
+                    <button type="button" class="mode-btn" id="mode-compare-btn" onclick="setAnalysisMode('compare')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="18"></rect>
+                            <rect x="14" y="3" width="7" height="18"></rect>
+                        </svg>
+                        <span>Compare Both</span>
+                        <span class="mode-badge">Dual HUD</span>
+                    </button>
+                </div>
+
+                <!-- Temporal Sequence Buffer Progress Bar -->
+                <div class="sequence-buffer-box" id="sequence-buffer-box">
+                    <div class="seq-meta-row">
+                        <span class="seq-title">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                            </svg>
+                            Temporal Buffer: <strong id="seq-count-val">0 / {{ sequence_length }} Frames</strong> (<span
+                                id="seq-pct-val">0%</span>)
+                        </span>
+                        <span class="seq-status-text" id="seq-status-badge">Collecting Frames...</span>
+                    </div>
+                    <div class="seq-progress-track">
+                        <div class="seq-progress-fill" id="seq-progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="card-header-stable">
+                    <div class="viewport-title-row">
+                        <div>
+                            <h2 class="viewport-title" id="viewport-mode-title">Live Webcam Stream (CNN Mode)</h2>
+                            <p class="card-subtitle" id="viewport-mode-sub">Instantaneous single-frame spatial analysis
+                            </p>
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-sm" id="theater-toggle-btn"
+                            onclick="toggleTheaterMode()" title="Toggle Widescreen Focus Mode">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"></path>
+                            </svg>
+                            <span id="theater-btn-text">Wide View</span>
+                        </button>
+                    </div>
+
+                    <!-- Dedicated Fixed-Height Telemetry Strip (Zero Layout Shift) -->
+                    <div class="telemetry-strip">
+                        <div class="telemetry-pills-left">
+                            <span class="metric-pill pill-neutral" id="webcam-fps-badge">
+                                <span class="pill-dot blue"></span> <span id="webcam-fps-val">-- FPS</span>
+                            </span>
+                            <span class="metric-pill pill-neutral" id="webcam-latency-badge">
+                                <span class="pill-dot purple"></span> <span id="webcam-latency-val">-- ms</span>
+                            </span>
+                        </div>
+                        <div class="telemetry-pills-right">
+                            <span class="metric-pill pill-neutral" id="webcam-quality-badge">
+                                <span class="pill-dot gray" id="quality-dot"></span> <span
+                                    id="quality-text">Standby</span>
+                            </span>
+                            <span class="metric-pill pill-faces" id="webcam-faces-badge">
+                                <span class="pill-dot green"></span> <span id="webcam-faces-val">1 Face</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Viewport Container -->
+                <div class="webcam-viewport" id="webcam-viewport-box">
+                    <video id="webcam-video" autoplay playsinline muted></video>
+                    <canvas id="webcam-canvas"></canvas>
+
+                    <!-- Offline Placeholder -->
+                    <div class="webcam-placeholder" id="webcam-placeholder">
+                        <div class="placeholder-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8">
+                                <path d="M23 7l-7 5 7 5V7z"></path>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                        </div>
+                        <h3>Camera Offline</h3>
+                        <p>Click "Start Camera" to initiate live facial expression recognition</p>
+                        <button type="button" class="btn btn-primary" onclick="startWebcam()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                            </svg>
+                            Start Camera
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Webcam Control Toolbar -->
+                <div class="webcam-toolbar">
+                    <div class="toolbar-buttons">
+                        <button type="button" class="btn btn-success" id="start-cam-btn" onclick="startWebcam()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            Start Camera
+                        </button>
+                        <button type="button" class="btn btn-danger" id="stop-cam-btn" onclick="stopWebcam()" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="6" y="6" width="12" height="12"></rect>
+                            </svg>
+                            Stop Camera
+                        </button>
+                    </div>
+
+                    <div class="toolbar-status">
+                        <span class="status-indicator" id="cam-indicator"></span>
+                        <span id="cam-status-text">Camera offline</span>
+                    </div>
+                </div>
+
+                <!-- Advanced Live Settings (Smoothing & Confidence Threshold) -->
+                <div class="webcam-settings-panel">
+                    <div class="setting-item">
+                        <label class="setting-label" for="confidence-threshold-slider">
+                            <span>Confidence Threshold:</span>
+                            <span class="setting-val" id="confidence-threshold-value">{{ confidence_threshold }}%</span>
+                        </label>
+                        <input type="range" id="confidence-threshold-slider" min="20" max="75"
+                            value="{{ confidence_threshold }}" step="5" class="range-slider">
+                        <span class="setting-hint">Predictions below this score are flagged as uncertain.</span>
+                    </div>
+
+                    <div class="setting-item toggle-item">
+                        <div class="toggle-wrapper">
+                            <input type="checkbox" id="smoothing-toggle" class="toggle-checkbox" checked>
+                            <label for="smoothing-toggle" class="toggle-slider"></label>
+                        </div>
+                        <div class="toggle-text">
+                            <span class="toggle-title">Prediction Smoothing (EMA &amp; Stabilization)</span>
+                            <span class="setting-hint">Filters temporal jitter across consecutive frames</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item toggle-item">
+                        <div class="toggle-wrapper">
+                            <input type="checkbox" id="auto-detect-toggle" class="toggle-checkbox" checked
+                                onchange="toggleAutoDetection(this.checked)" disabled>
+                            <label for="auto-detect-toggle" class="toggle-slider"></label>
+                        </div>
+                        <div class="toggle-text">
+                            <span class="toggle-title">Continuous Real-Time Analysis</span>
+                            <span class="setting-hint">Streams frames automatically every 450ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Prediction Metrics & Probabilities -->
+            <div class="card metrics-card" id="webcam-metrics-card">
+                <div class="card-header">
+                    <h2>Predicted Facial Expression</h2>
+                    <p class="card-subtitle">Live inference from active neural network</p>
+                </div>
+
+                <!-- Empty State before camera starts -->
+                <div class="webcam-empty-state" id="webcam-empty-state">
+                    <div class="pulse-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                            <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                            <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                        </svg>
+                    </div>
+                    <p>Start the camera to see live expression predictions, Chart.js probability charts, and temporal
+                        recurrence</p>
+                </div>
+
+                <!-- Live Results Display Container -->
+                <div class="webcam-live-data" id="webcam-live-data" style="display: none;">
+
+                    <!-- Mode C Compare Both Container -->
+                    <div class="compare-container" id="webcam-compare-container">
+                        <div class="compare-grid">
+                            <!-- CNN Card -->
+                            <div class="compare-card card-cnn">
+                                <div class="compare-header">
+                                    <span class="compare-badge cnn">Mode A: Spatial CNN</span>
+                                    <span class="compare-latency" id="cmp-cnn-latency">-- ms</span>
+                                </div>
+                                <div class="compare-pred-val" id="cmp-cnn-label">--</div>
+                                <div class="compare-conf-val" id="cmp-cnn-conf">--% Confidence</div>
+                                <div class="compare-scope">Instantaneous static frame</div>
+                            </div>
+
+                            <!-- LSTM Card -->
+                            <div class="compare-card card-lstm">
+                                <div class="compare-header">
+                                    <span class="compare-badge lstm">Mode B: CNN + LSTM</span>
+                                    <span class="compare-latency" id="cmp-lstm-latency">-- ms</span>
+                                </div>
+                                <div class="compare-pred-val" id="cmp-lstm-label">Collecting...</div>
+                                <div class="compare-conf-val" id="cmp-lstm-conf">--% Confidence</div>
+                                <div class="compare-scope">{{ sequence_length }}-frame temporal recurrence</div>
+                            </div>
+                        </div>
+
+                        <div class="compare-agreement-bar" id="cmp-agreement-bar">
+                            <span class="agreement-pill buffering" id="cmp-agreement-pill">
+                                <span class="pill-dot purple"></span> <span id="cmp-agreement-text">Buffering
+                                    Sequence...</span>
+                            </span>
+                            <span class="agreement-desc" id="cmp-agreement-desc">Collecting consecutive frames to begin
+                                temporal comparison</span>
+                        </div>
+                    </div>
+
+                    <!-- Top Predicted Hero Banner (Locked Height - Zero Jitter) -->
+                    <div class="hero-prediction-box" id="webcam-label-card">
+                        <div class="hero-pred-top">
+                            <span class="hero-pred-tag" id="webcam-pred-top-tag">Top Predicted Expression (<span
+                                    id="active-mode-badge-label">CNN</span>)</span>
+                            <span class="hero-pred-conf" id="webcam-confidence">--%</span>
+                        </div>
+                        <h1 class="hero-pred-label" id="webcam-predicted-label">Neutral</h1>
+
+                        <div class="hero-desc-container">
+                            <p class="hero-pred-desc" id="webcam-description">Awaiting camera frame...</p>
+                        </div>
+
+                        <!-- Uncertain Notice Banner with Reserved Height -->
+                        <div class="uncertain-banner-wrapper">
+                            <div class="uncertain-banner" id="webcam-uncertain-notice">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                                <span id="webcam-uncertain-text">Low confidence: observable cues show mixed facial
+                                    tension.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 7-Class Probability Distribution Bars & Interactive Chart.js Graph -->
+                    <div class="prob-distribution-card">
+                        <div class="prob-header">
+                            <h4>Softmax Class Probabilities</h4>
+                            <span class="prob-unit">% activation</span>
+                        </div>
+
+                        <!-- Phase 4: Interactive Chart.js Horizontal Bar Chart -->
+                        <div class="chart-canvas-container" style="height: 180px; margin-bottom: 14px;">
+                            <canvas id="chart-webcam-probs"></canvas>
+                        </div>
+
+                        <div class="prob-list">
+                            {% for name in class_names %}
+                            <div class="prob-row" id="row-{{ name }}" style="--row-color: {{ class_colors[name] }};">
+                                <div class="prob-meta">
+                                    <span class="prob-name">
+                                        <span class="emotion-color-dot"
+                                            style="background-color: var(--row-color);"></span>
+                                        {{ name }}
+                                    </span>
+                                    <span class="prob-val" id="val-{{ name }}">0.0%</span>
+                                </div>
+                                <div class="prob-track">
+                                    <div class="prob-bar" id="bar-{{ name }}"
+                                        style="background-color: var(--row-color); width: 0%;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Rolling Prediction Timeline Track & Chart.js Line Timeline -->
+                    <div class="timeline-container">
+                        <div class="timeline-header">
+                            <h4>Live Expression Timeline &amp; Temporal Confidence</h4>
+                            <span class="text-muted text-xs">Rolling session timeline</span>
+                        </div>
+
+                        <!-- Phase 4: Interactive Chart.js Line Timeline -->
+                        <div class="chart-canvas-container" style="height: 140px; margin-bottom: 12px;">
+                            <canvas id="chart-webcam-timeline"></canvas>
+                        </div>
+
+                        <div class="timeline-track" id="webcam-timeline-track">
+                            <span class="text-muted text-xs">Timeline history will populate as frames are
+                                analyzed...</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 2: IMAGE UPLOAD ==================== -->
+    <div class="tab-pane {% if active_tab == 'upload' %}active{% endif %}" id="pane-upload">
+        <div class="card demo-card">
+            <div class="card-header">
+                <h2>Upload Facial Image for Expression Analysis</h2>
+                <p class="card-subtitle">
+                    Supports JPG, JPEG, PNG, and WEBP formats up to 5 MB. The system autonomously crops the face using
+                    OpenCV CLAHE, normalizes the luminance patch, and executes neural inference.
+                </p>
+            </div>
+
+            <form id="upload-form" action="{{ url_for('predict') }}" method="POST" enctype="multipart/form-data">
+                <!-- Drop Zone -->
+                <div class="drop-zone" id="drop-zone">
+                    <div class="drop-zone-content" id="drop-zone-prompt">
+                        <div class="upload-icon-circle">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h3 class="drop-title">Drag &amp; Drop Facial Image Here</h3>
+                        <p class="drop-desc">or click to browse from your device</p>
+                        <span class="file-limits">JPG, JPEG, PNG, WEBP (Max 5 MB)</span>
+                    </div>
+
+                    <!-- Image Preview -->
+                    <div class="preview-container" id="preview-container" style="display: none;">
+                        <img id="image-preview" src="#" alt="Selected Image Preview" class="preview-image">
+                        <div class="preview-details">
+                            <div class="file-name" id="preview-filename">image.jpg</div>
+                            <div class="file-size" id="preview-filesize">0 KB</div>
+                            <button type="button" class="btn btn-sm btn-ghost" onclick="clearSelectedImage(event)">
+                                &times; Remove &amp; Choose Another
+                            </button>
+                        </div>
+                    </div>
+
+                    <input type="file" name="image" id="file-input" class="file-input" accept=".jpg,.jpeg,.png,.webp"
+                        required>
+                </div>
+
+                <div id="upload-error" class="error-text" style="display: none;"></div>
+
+                <!-- Quick Demo Test Faces Picker -->
+                <div class="samples-picker">
+                    <span class="samples-picker-title">Quick Demo Test Faces (Click to load):</span>
+                    <div class="samples-picker-chips">
+                        {% for name in class_names %}
+                        <button type="button" class="sample-chip"
+                            data-sample-url="{{ url_for('static', filename='images/sample_faces/' ~ name.lower() ~ '_sample.png') }}"
+                            data-sample-name="{{ name.lower() }}_sample.png"
+                            onclick="loadSampleFace(this.dataset.sampleUrl, this.dataset.sampleName)">
+                            <img src="{{ url_for('static', filename='images/sample_faces/' ~ name.lower() ~ '_sample.png') }}"
+                                alt="{{ name }}">
+                            <span>{{ name }}</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                        <span class="btn-text">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 14 14"></polyline>
+                            </svg>
+                            Analyze Facial Expression
+                        </span>
+                        <span class="btn-spinner" style="display: none;">
+                            <span class="spinner"></span> Running CNN Inference...
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- In-Page Inline Results Card (populated via AJAX) -->
+            <div class="upload-inline-result" id="upload-inline-result" style="display: none;">
+                <div class="inline-result-header">
+                    <h3>Analysis Results</h3>
+                    <div class="inline-badges">
+                        <span class="metric-pill pill-neutral" id="inline-quality-pill">
+                            <span class="pill-dot green"></span> Lighting Optimal
+                        </span>
+                        <span class="badge badge-warning" id="inline-multiface-badge" style="display: none;">
+                            Multiple Faces
+                        </span>
+                    </div>
+                </div>
+
+                <div class="inline-result-grid">
+                    <!-- Left: Annotated Image + Crop -->
+                    <div class="inline-visual-col">
+                        <div class="annotated-box">
+                            <img id="inline-annotated-img" src="#" alt="Annotated Face" class="annotated-img">
+                        </div>
+                        <div class="crop-preview-box">
+                            <img id="inline-crop-img" src="#" alt="CNN Preprocessed 48x48 Crop" class="crop-img">
+                            <div class="crop-meta">
+                                <strong>48 &times; 48 Grayscale Input</strong>
+                                <p class="text-muted text-xs">Cropped facial ROI normalized to [0.0, 1.0]</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Prediction & Probabilities -->
+                    <div class="inline-data-col">
+                        <div class="hero-prediction-box" id="inline-hero-card">
+                            <div class="hero-pred-top">
+                                <span class="hero-pred-tag">Predicted Expression</span>
+                                <span class="hero-pred-conf" id="inline-conf-val">--%</span>
+                            </div>
+                            <h2 class="hero-pred-label" id="inline-pred-label">--</h2>
+                            <p class="hero-pred-desc" id="inline-desc-text"></p>
+                        </div>
+
+                        <!-- Phase 4: Interactive Chart.js Bar Chart for Upload Results -->
+                        <div class="chart-canvas-container" style="height: 180px; margin-bottom: 14px;">
+                            <canvas id="chart-upload-probs"></canvas>
+                        </div>
+
+                        <div class="prob-distribution-card">
+                            <div class="prob-header">
+                                <h4>Expression Probability Distribution</h4>
+                            </div>
+                            <div class="prob-list">
+                                {% for name in class_names %}
+                                <div class="prob-row" id="inline-row-{{ name }}" style="--row-color: {{ class_colors[name] }};">
+                                    <div class="prob-meta">
+                                        <span class="prob-name">
+                                            <span class="emotion-color-dot"
+                                                style="background-color: var(--row-color);"></span>
+                                            {{ name }}
+                                        </span>
+                                        <span class="prob-val" id="inline-val-{{ name }}">0.0%</span>
+                                    </div>
+                                    <div class="prob-track">
+                                        <div class="prob-bar" id="inline-bar-{{ name }}"
+                                            style="background-color: var(--row-color); width: 0%;"></div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TAB 3: CNN VS LSTM COMPARISON ==================== -->
+    <div class="tab-pane {% if active_tab == 'compare' %}active{% endif %}" id="pane-compare">
+        <div class="card demo-card">
+            <div class="card-header flex-between">
+                <div>
+                    <h2>CNN vs CNN + LSTM Spatiotemporal Comparison</h2>
+                    <p class="card-subtitle">
+                        An educational and architectural exploration of Spatial Single-Frame Analysis vs. Temporal
+                        Sequence Recurrence.
+                    </p>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary btn-sm"
+                        onclick="switchTab('webcam'); if(typeof setAnalysisMode === 'function') setAnalysisMode('compare');">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="18"></rect>
+                            <rect x="14" y="3" width="7" height="18"></rect>
+                        </svg>
+                        Test Dual HUD Live in Camera
+                    </button>
+                </div>
+            </div>
+
+            <!-- Deep Dive Architecture Breakdown -->
+            <div class="grid-2-col" style="margin-bottom: 24px;">
+                <!-- CNN Architecture Overview -->
+                <div class="card"
+                    style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(59, 130, 246, 0.25);">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <span class="badge"
+                            style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3);">
+                            Mode A: Deep Convolutional Neural Network (CNN)
+                        </span>
+                        <span class="badge badge-success">Active &bull; Trained</span>
+                    </div>
+                    <h3 style="color: #ffffff; margin-bottom: 8px;">Spatial Facial Feature Extraction</h3>
+                    <p class="text-sm text-muted" style="line-height: 1.6; margin-bottom: 14px;">
+                        Processes individual static 48&times;48 grayscale facial patches independently. Hierarchical 2D
+                        convolutional kernels detect edges, textures, and geometric contours of facial action units
+                        (mouth curves, eyebrow dips).
+                    </p>
+                    <ul class="text-sm"
+                        style="color: #cbd5e1; list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li><strong>Input:</strong> Single 48&times;48&times;1 Normalized Tensor</li>
+                        <li><strong>Receptive Field:</strong> Static 2D spatial pixel grid</li>
+                        <li><strong>Internal Latent Vector:</strong> 256-D intermediate embedding (Dense FC)</li>
+                        <li><strong>Strengths:</strong> Low computational complexity (~18 ms), fast response, excellent
+                            on posed static imagery</li>
+                        <li><strong>Limitations:</strong> Vulnerable to single-frame blinks, motion flutter, or
+                            transient micro-occlusions</li>
+                    </ul>
+                </div>
+
+                <!-- CNN + LSTM Architecture Overview -->
+                <div class="card"
+                    style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(139, 92, 246, 0.25);">
+                    <div
+                        style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <span class="badge"
+                            style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.3);">
+                            Mode B: Spatiotemporal CNN + LSTM
+                        </span>
+                        {% if lstm_available %}
+                        <span class="badge badge-success">Active &bull; Trained</span>
+                        {% else %}
+                        <span class="badge"
+                            style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            Pipeline Ready &bull; Awaiting Video Dataset
+                        </span>
+                        {% endif %}
+                    </div>
+                    <h3 style="color: #ffffff; margin-bottom: 8px;">Temporal Sequence Recurrence</h3>
+                    <p class="text-sm text-muted" style="line-height: 1.6; margin-bottom: 14px;">
+                        Combines the CNN's 256-D spatial feature extractor with a recurrent Long Short-Term Memory
+                        (LSTM) network over a sliding window of <strong>16 consecutive frames</strong>, capturing
+                        natural onset, peak, and decay phases of expressions.
+                    </p>
+                    <ul class="text-sm"
+                        style="color: #cbd5e1; list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li><strong>Input:</strong> 16 &times; 256-D sequence of CNN intermediate vectors</li>
+                        <li><strong>Recurrent Memory:</strong> 128 LSTM units with Input, Forget, and Output gates</li>
+                        <li><strong>Temporal Window:</strong> Sliding FIFO sequence buffer (~3.6 seconds at 4.5 FPS)
+                        </li>
+                        <li><strong>Strengths:</strong> Filters out transient blinks, dampens rapid flutter, models
+                            dynamic emotional transitions</li>
+                        <li><strong>Limitations:</strong> Sequence buffer warming required (must collect 16 frames
+                            before temporal prediction)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Measured Latency Comparison Chart -->
+            <div class="card" style="background: rgba(11, 17, 29, 0.6); margin-bottom: 24px;">
+                <div class="section-heading-row">
+                    <div>
+                        <h3 class="section-main-title">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 14 14"></polyline>
+                            </svg>
+                            Measured Processing Latency Breakdown (ms)
+                        </h3>
+                        <p class="text-muted text-sm">Empirical benchmarks captured on a standard student Windows CPU
+                            laptop.</p>
+                    </div>
+                </div>
+
+                <div class="chart-canvas-container" style="height: 240px;">
+                    <canvas id="chart-latency-comparison"></canvas>
+                </div>
+            </div>
+
+            <!-- Comparison Matrix Table -->
+            <div class="comparison-table-wrapper" style="margin-top: 0;">
+                <h3 class="perf-section-title" style="margin-bottom: 12px;">Detailed Architectural Comparison Matrix
+                </h3>
+                <div class="table-responsive">
+                    <table class="comparison-matrix-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">System Dimension</th>
+                                <th style="width: 37%;">Mode A: Spatial CNN</th>
+                                <th style="width: 38%;">Mode B: Spatiotemporal CNN + LSTM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Input Format</td>
+                                <td class="col-cnn">1 &times; 48&times;48 Grayscale Static Face Crop</td>
+                                <td class="col-lstm">{{ sequence_length }} Consecutive Frames (256-D normalized CNN
+                                    vectors)</td>
+                            </tr>
+                            <tr>
+                                <td>Feature Representation</td>
+                                <td class="col-cnn">Hierarchical 2D Convolutions + BatchNorm</td>
+                                <td class="col-lstm">256-D Intermediate Embedding + 128-Unit Recurrent Memory</td>
+                            </tr>
+                            <tr>
+                                <td>Temporal Awareness</td>
+                                <td class="col-cnn">None (Instantaneous static frame snapshot)</td>
+                                <td class="col-lstm">{{ sequence_length }}-Frame Sliding Window Receptive Field</td>
+                            </tr>
+                            <tr>
+                                <td>Noise &amp; Blink Resilience</td>
+                                <td class="col-cnn">Vulnerable to single-frame blinks or motion artifacts</td>
+                                <td class="col-lstm">Temporal continuity dampens single-frame micro-glitches</td>
+                            </tr>
+                            <tr>
+                                <td>Inference Latency</td>
+                                <td class="col-cnn">~18 &ndash; 25 ms per frame</td>
+                                <td class="col-lstm">~35 &ndash; 45 ms per sequence sliding step</td>
+                            </tr>
+                            <tr>
+                                <td>Operational Status</td>
+                                <td class="col-cnn"><strong style="color: #34d399;">Trained &amp; Active</strong>
+                                    (56.09% on FER-2013 test set)</td>
+                                <td class="col-lstm">
+                                    {% if lstm_info.trained %}
+                                    <strong style="color: #34d399;">Trained &amp; Active</strong>
+                                    {% else %}
+                                    <strong style="color: #fbbf24;">Pipeline Ready</strong> (Awaiting Video Dataset,
+                                    e.g. RAVDESS)
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ==================== TAB 4: MODEL PERFORMANCE ==================== -->
+    <div class="tab-pane {% if active_tab == 'performance' %}active{% endif %}" id="pane-performance">
+        <div class="card demo-card">
+            <div class="card-header">
+                <h2>Empirical Model Performance &amp; Evaluation Metrics</h2>
+                <p class="card-subtitle">
+                    Rigorous evaluation on the held-out test partition of the FER-2013 benchmark dataset.
+                </p>
+            </div>
+
+            <!-- Performance Metric Cards -->
+            <div class="perf-metric-grid">
+                <div class="perf-card">
+                    <span class="perf-card-title">Test Accuracy</span>
+                    <span class="perf-card-val text-primary" id="metric-test-accuracy">--</span>
+                    <span class="perf-card-sub">Held-out test partition</span>
+                </div>
+                <div class="perf-card">
+                    <span class="perf-card-title">Categorical Loss</span>
+                    <span class="perf-card-val text-warning" id="metric-test-loss">--</span>
+                    <span class="perf-card-sub">Cross-entropy loss</span>
+                </div>
+                <div class="perf-card">
+                    <span class="perf-card-title">Test Samples</span>
+                    <span class="perf-card-val" id="metric-test-samples">3,589</span>
+                    <span class="perf-card-sub">Unseen test faces</span>
+                </div>
+                <div class="perf-card">
+                    <span class="perf-card-title">Benchmark Dataset</span>
+                    <span class="perf-card-val" id="metric-dataset-name">FER-2013</span>
+                    <span class="perf-card-sub">ICML Challenge Benchmark</span>
+                </div>
+            </div>
+
+            <!-- Phase 4: Chart.js Per-Class Performance Bar Chart -->
+            <div class="card" style="background: rgba(11, 17, 29, 0.6); margin-bottom: 24px;">
+                <h3 class="perf-section-title" style="margin-bottom: 12px;">Precision, Recall &amp; F1-Score Chart
+                    Across 7 Expression Classes</h3>
+                <div class="chart-canvas-container" style="height: 240px;">
+                    <canvas id="chart-perf-metrics"></canvas>
+                </div>
+            </div>
+
+            <!-- Per-Class Metrics Table & Confusion Matrix Grid -->
+            <div class="grid-2-col perf-detail-grid">
+                <div class="perf-table-col">
+                    <h3 class="perf-section-title">Per-Class Precision, Recall &amp; F1-Score Table</h3>
+                    <div class="table-responsive">
+                        <table class="metrics-table">
+                            <thead>
+                                <tr>
+                                    <th>Expression</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support</th>
+                                </tr>
+                            </thead>
+                            <tbody id="metrics-table-body">
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Loading metrics...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="perf-plot-col">
+                    <h3 class="perf-section-title">Confusion Matrix Heatmap</h3>
+                    <div class="plot-box">
+                        <img src="{{ url_for('static', filename='plots/confusion_matrix.png') }}" alt="Confusion Matrix"
+                            class="plot-img">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training History Plots -->
+            <div class="perf-history-section">
+                <h3 class="perf-section-title">Training &amp; Validation Learning Curves</h3>
+                <div class="plot-box">
+                    <img src="{{ url_for('static', filename='plots/training_history.png') }}" alt="Training History"
+                        class="plot-img">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/webcam.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FaceSense AI – Real-Time Facial Expression Analysis Using CNN &amp; LSTM{% endblock %}</title>
+    
+    <!-- Meta tags for professional presentation -->
+    <meta name="description" content="FaceSense AI: Real-Time Human Facial Expression Recognition using Deep Convolutional Neural Networks and Computer Vision.">
+    
+    <!-- Google Fonts: Inter & Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="dark-theme">
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-brand">
+                <div class="brand-icon-wrapper">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                    </svg>
+                </div>
+                <div class="brand-text-block">
+                    <span class="brand-title">FaceSense <span class="brand-accent">AI</span></span>
+                    <span class="brand-subtitle">Real-Time Expression Analysis</span>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' and active_tab == 'dashboard' %}active{% endif %}" onclick="if (typeof switchTab === 'function') { switchTab('dashboard'); return false; }">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    Dashboard
+                </a>
+                <a href="{{ url_for('live_route') }}" class="nav-link {% if request.endpoint == 'live_route' or (request.endpoint == 'index' and active_tab == 'webcam') %}active{% endif %}" onclick="if (typeof switchTab === 'function') { switchTab('webcam'); return false; }">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                    Live Analysis
+                </a>
+                <a href="{{ url_for('upload_route') }}" class="nav-link {% if request.endpoint == 'upload_route' or (request.endpoint == 'index' and active_tab == 'upload') %}active{% endif %}" onclick="if (typeof switchTab === 'function') { switchTab('upload'); return false; }">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Image Analysis
+                </a>
+                <a href="{{ url_for('compare_route') }}" class="nav-link {% if request.endpoint == 'compare_route' or (request.endpoint == 'index' and active_tab == 'compare') %}active{% endif %}" onclick="if (typeof switchTab === 'function') { switchTab('compare'); return false; }">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"></rect><rect x="14" y="3" width="7" height="18"></rect></svg>
+                    CNN vs LSTM
+                </a>
+                <a href="{{ url_for('performance_route') }}" class="nav-link {% if request.endpoint == 'performance_route' or (request.endpoint == 'index' and active_tab == 'performance') %}active{% endif %}" onclick="if (typeof switchTab === 'function') { switchTab('performance'); return false; }">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    Performance
+                </a>
+                <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint in ('about', 'demo_route') %}active{% endif %}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+                    Demo Guide
+                </a>
+            </nav>
+
+            <div class="nav-badges">
+                {% if model_available %}
+                    <span class="badge badge-success" title="CNN Spatial Model Trained on 35,887 FER-2013 Faces">
+                        <span class="status-dot online"></span> CNN Active
+                    </span>
+                {% else %}
+                    <span class="badge badge-warning">
+                        <span class="status-dot offline"></span> CNN Offline
+                    </span>
+                {% endif %}
+
+                {% if lstm_available %}
+                    <span class="badge badge-success" title="LSTM Temporal Model Active">
+                        <span class="status-dot online"></span> LSTM Active
+                    </span>
+                {% else %}
+                    <span class="badge badge-neutral" style="background: rgba(139, 92, 246, 0.15); color: #c4b5fd; border: 1px solid rgba(139, 92, 246, 0.3);" title="LSTM Pipeline Functional - Awaiting Video Training (dataset/videos/)">
+                        <span class="status-dot standby" style="background: #a855f7;"></span> LSTM Ready
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages Container -->
+    <div class="container flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <div class="alert-icon">
+                            {% if category == 'error' %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            {% else %}
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            {% endif %}
+                        </div>
+                        <div class="alert-content">{{ message }}</div>
+                        <button type="button" class="alert-close" onclick="this.parentElement.remove();">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-top">
+                <div class="footer-col brand-col">
+                    <div class="footer-brand">
+                        <span class="brand-title">FaceSense <span class="brand-accent">AI</span></span>
+                    </div>
+                    <p class="footer-desc">
+                        A real-time facial expression analysis system combining Convolutional Neural Networks (CNN) and Computer Vision for live continuous video and static image expression inference.
+                    </p>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">Technologies</h4>
+                    <ul class="footer-list">
+                        <li>Python 3.13 &amp; Flask 3.1</li>
+                        <li>TensorFlow 2.21 / Keras 3</li>
+                        <li>OpenCV (CLAHE Haar Cascade)</li>
+                        <li>FER-2013 Dataset (35,887 Images)</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 class="footer-heading">Quick Actions</h4>
+                    <ul class="footer-list">
+                        <li><a href="{{ url_for('index') }}#pane-webcam" onclick="switchTab('webcam')">Live Webcam Stream</a></li>
+                        <li><a href="{{ url_for('index') }}#pane-upload" onclick="switchTab('upload')">Image Expression Upload</a></li>
+                        <li><a href="{{ url_for('index') }}#pane-performance" onclick="switchTab('performance')">Evaluation Metrics</a></li>
+                        <li><a href="{{ url_for('about') }}">CNN Architecture Specs</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Scientific & Cognitive Disclaimer Banner -->
+            <div class="disclaimer-banner">
+                <div class="disclaimer-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <div class="disclaimer-text">
+                    <strong>Scientific Note:</strong>
+                    {{ disclaimer }} Results reflect <strong>Predicted Visible Facial Expression</strong>, not internal mood.
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 FaceSense AI – Real-Time Facial Expression Analysis System. BCA Semester 5 Neural Network Project. Built for academic demonstration.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chart.js 4.4 Library for Interactive Data Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

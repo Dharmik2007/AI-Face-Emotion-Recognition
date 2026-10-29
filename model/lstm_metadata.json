@@ -1,0 +1,32 @@
+{
+    "model_name": "FaceSense_CNN_LSTM",
+    "trained": false,
+    "status": "not_trained",
+    "reason": "No video files found in C:\\Users\\Vataliya Dharmik\\OneDrive\\Desktop\\NN\\Face Recognization\\dataset\\videos. Awaiting RAVDESS dataset.",
+    "architecture": {
+        "type": "CNN_Feature_Extractor_Plus_LSTM",
+        "input_shape": [
+            16,
+            256
+        ],
+        "sequence_length": 16,
+        "feature_dim": 256,
+        "intermediate_cnn_layer": "bn_dense",
+        "lstm_units": 128,
+        "dense_units": 64,
+        "num_classes": 7
+    },
+    "classes": [
+        "Angry",
+        "Disgust",
+        "Fear",
+        "Happy",
+        "Sad",
+        "Surprise",
+        "Neutral"
+    ],
+    "evaluation": null,
+    "dataset_name": null,
+    "instructions": "To train the genuine temporal model: Download RAVDESS video clips into dataset/videos/ and execute 'python training/train_lstm.py'.",
+    "last_checked": "2026-10-24 12:05:33"
+}
